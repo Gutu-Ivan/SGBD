@@ -70,6 +70,13 @@ select numele from persoane
 inner join amici a2 on persoane.idPersoana = a2.idPersoana2
 where (SELECT idPersoana2 where idPersoana1 = 1);
 
+#2
+SELECT p1.Numele, p2.Numele
+FROM amici
+INNER JOIN persoane AS p1 ON amici.idpersoana1 = p1.idPersoana
+INNER JOIN persoane AS p2 ON amici.idpersoana2 = p2.idPersoana
+WHERE p1.Virsta <> p2.Virsta;
+
 
 #3
 select p1.varsta, p1.numele, p2.varsta, p2.numele
@@ -84,7 +91,7 @@ select p.numele, count(r.idPersoana2) as nr
 from persoane
 inner join rude as r on persoane.idPersoana = r.idPersoana1
 inner join persoane p on p.idPersoana = r.idPersoana2
-having count(r.idPersoana2) > 1
+where count(r.idPersoana2) > 1
 order by  Numele;
 
 #5
@@ -92,9 +99,9 @@ select numele
 from persoane
 inner join rude r1 on persoane.idPersoana = r1.idPersoana1
 inner join rude r2 on persoane.idPersoana = r2.idPersoana2
-where  count(r2.idPersoana2) < 1;
+having count(r2.idPersoana2) < 1;
 
-#6 NR
+#6
 select *
 from persoane
 inner join amici as a1 on persoane.idPersoana = a1.idPersoana1
@@ -117,5 +124,27 @@ inner join amici a2 on persoane.idPersoana = a2.idPersoana2
 where count(a2.idPersoana2) => 1 and count(r2.idPersoana2) => 1;
 
 #9
-SELECT AVG(count) AS Media
-FROM ( SELECT count(idPersoana) AS count from persoane)
+SELECT count(idPersoana) / count(distinct persoane.idPersoana) as prieten_per_pers
+FROM persoane
+INNER JOIN amici ON amici.idpersoana1 = persoane.idPersoana
+INNER JOIN amici ON amici.idpersoana2 = persoane.idPersoana;
+
+
+
+#11
+select numele, varsta
+from persoane
+inner join amici a1 on persoane.idPersoana = a1.idPersoana1
+inner join amici a2 on persoane.idPersoana = a2.idPersoana2
+having max(a2.idPersoana2);
+
+#13
+
+#14
+select distinct Numele
+from persoane
+inner join rude r1 on persoane.idPersoana = r1.idPersoana1
+inner join rude r2 on persoane.idPersoana = r2.idPersoana2
+inner join amici a1 on persoane.idPersoana = a1.idPersoana1
+inner join amici a2 on persoane.idPersoana = a2.idPersoana2
+where count(a2.idPersoana2) < 1 and count(r2.idPersoana2) = 1
