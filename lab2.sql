@@ -77,31 +77,35 @@ from amici
 inner join persoane as p1 on amici.idPersoana1 = p1.idPersoana
 inner join persoane as p2 on amici.idPersoana2 = p2.idPersoana
 where p1.Varsta = p2.Varsta
-order by p1.Varsta, p2.Varsta, p1.Numele, p2.Numele
+order by p1.Varsta, p2.Varsta, p1.Numele, p2.Numele;
 
 #4
-select p1.numele, count(rude.idPersoana2) as nr 
+select p.numele, count(r.idPersoana2) as nr
 from persoane
-inner join rude as r on persoane.idPersoana = rude.idPersoana1
+inner join rude as r on persoane.idPersoana = r.idPersoana1
 inner join persoane p on p.idPersoana = r.idPersoana2
-where count(rude.idPersoana) > 1
+having count(r.idPersoana2) > 1
+order by  Numele;
 
 #5
 select numele
 from persoane
 inner join rude r1 on persoane.idPersoana = r1.idPersoana1
 inner join rude r2 on persoane.idPersoana = r2.idPersoana2
-where  count(rude.idPersoana2) < 1
+where  count(r2.idPersoana2) < 1;
 
 #6 NR
-select a1.numele, p1.numele, r1.numele
+select *
 from persoane
 inner join amici as a1 on persoane.idPersoana = a1.idPersoana1
 inner join amici as a2 on persoane.idPersoana = a2.idPersoana2
+inner join rude as r1 on persoane.idPersoana = r1.idPersoana1
+inner join rude as r2 on persoane.idPersoana = r2.idPersoana2;
 
 #7
-select count(idPersoana) - count(idPersoana where Varsta => 18) as total
-from persoane
+select count(idPersoana) - (select COUNT(idPersoana)
+from persoane where Varsta >= 18) as Diferenta
+from persoane;
 
 #8
 select distinct Numele
@@ -110,7 +114,7 @@ inner join rude r1 on persoane.idPersoana = r1.idPersoana1
 inner join rude r2 on persoane.idPersoana = r2.idPersoana2
 inner join amici a1 on persoane.idPersoana = a1.idPersoana1
 inner join amici a2 on persoane.idPersoana = a2.idPersoana2
-where count(a2.idPersoana2) => 1 and count(r2.idPersoana2) => 1
+where count(a2.idPersoana2) => 1 and count(r2.idPersoana2) => 1;
 
 #9
 SELECT AVG(count) AS Media
