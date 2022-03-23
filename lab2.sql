@@ -66,20 +66,29 @@ values (4, 6),
        (12, 13);
 
 #1
-select numele from persoane
-inner join amici a2 on persoane.idPersoana = a2.idPersoana2
-where (SELECT idPersoana2 where idPersoana1 = 1);
+select persoane.Numele
+from persoane
+inner join amici a1 ON persoane.idPersoana = a1.idpersoana2
+where a1.idPersoana1 = (SELECT idpersoana
+		                   FROM persoane
+					       WHERE numele ='Elvi')
+UNION
+select persoane.Numele
+from persoane
+inner join amici a2 ON persoane.idPersoana = a2.idpersoana1
+where a2.idPersoana2 = (SELECT idpersoana
+					       FROM persoane
+					       WHERE numele = 'Elvi');
 
 #2
 SELECT p1.Numele, p2.Numele
 FROM amici
 INNER JOIN persoane AS p1 ON amici.idpersoana1 = p1.idPersoana
 INNER JOIN persoane AS p2 ON amici.idpersoana2 = p2.idPersoana
-WHERE p1.Virsta <> p2.Virsta;
-
+WHERE p1.Varsta <> p2.Varsta;
 
 #3
-select p1.varsta, p1.numele, p2.varsta, p2.numele
+select p1.Varsta, p1.numele, p2.Varsta, p2.numele
 from amici
 inner join persoane as p1 on amici.idPersoana1 = p1.idPersoana
 inner join persoane as p2 on amici.idPersoana2 = p2.idPersoana
@@ -89,62 +98,92 @@ order by p1.Varsta, p2.Varsta, p1.Numele, p2.Numele;
 #4
 select p.numele, count(r.idPersoana2) as nr
 from persoane
-inner join rude as r on persoane.idPersoana = r.idPersoana1
-inner join persoane p on p.idPersoana = r.idPersoana2
-where count(r.idPersoana2) > 1
-order by  Numele;
+inner join rude r on persoane.idPersoana = r.idPersoana1 or persoane.idPersoana = r.idPersoana2
+inner join persoane p on p.idPersoana = r.idPersoana2 or p.idPersoana = r.idPersoana1
+group by p.idPersoana
+having count(r.idPersoana2) > 1;
 
 #5
-select numele
+select Numele
 from persoane
-inner join rude r1 on persoane.idPersoana = r1.idPersoana1
-inner join rude r2 on persoane.idPersoana = r2.idPersoana2
-having count(r2.idPersoana2) < 1;
+left join rude r1 on persoane.idPersoana = r1.idPersoana1
+group by idPersoana
+having count(r1.idPersoana2) = 0
+
+union
+select Numele
+from persoane
+right join rude r2 on persoane.idPersoana = r2.idPersoana2
+group by idPersoana
+having count(r2.idPersoana2) = 0;
 
 #6
 select *
-from persoane
-inner join amici as a1 on persoane.idPersoana = a1.idPersoana1
-inner join amici as a2 on persoane.idPersoana = a2.idPersoana2
-inner join rude as r1 on persoane.idPersoana = r1.idPersoana1
-inner join rude as r2 on persoane.idPersoana = r2.idPersoana2;
+from amici
+inner join persoane p1 on amici.Idpersoana1 = p1.idpersoana
+inner join persoane p2 on amici.Idpersoana2 = p2.idPersoana
+
+union all
+select *
+from rude
+inner join persoane p1 on rude.Idpersoana1 = p1.idpersoana
+inner join persoane p2 on rude.Idpersoana2 = p2.idPersoana;
 
 #7
-select count(idPersoana) - (select COUNT(idPersoana)
-from persoane where Varsta >= 18) as Diferenta
+select count(*) - (select COUNT(idPersoana) from persoane where Varsta >= 18) as Diferenta
 from persoane;
 
 #8
-select distinct Numele
+select Numele
 from persoane
-inner join rude r1 on persoane.idPersoana = r1.idPersoana1
-inner join rude r2 on persoane.idPersoana = r2.idPersoana2
-inner join amici a1 on persoane.idPersoana = a1.idPersoana1
-inner join amici a2 on persoane.idPersoana = a2.idPersoana2
-where count(a2.idPersoana2) => 1 and count(r2.idPersoana2) => 1;
+left join rude r1 on persoane.idPersoana = r1.idPersoana1
+left join rude r2 on persoane.idPersoana = r2.idPersoana2
+group by idPersoana
+having count(r1.idPersoana2) >= 1 and count(r2.idPersoana2) >= 1
+
+union all
+select Numele
+from persoane
+right join amici a1 on persoane.idPersoana = a1.idPersoana1
+right join amici a2 on persoane.idPersoana = a1.idPersoana2
+group by idPersoana
+having count(a1.idPersoana2) >= 1 and count(a2.idPersoana2) >= 1;
 
 #9
-SELECT count(idPersoana) / count(distinct persoane.idPersoana) as prieten_per_pers
-FROM persoane
-INNER JOIN amici ON amici.idpersoana1 = persoane.idPersoana
-INNER JOIN amici ON amici.idpersoana2 = persoane.idPersoana;
+select count(idPersoana) / count(distinct persoane.idPersoana) as prieten_per_pers
+from persoane
+inner join amici a1 on a1.idpersoana1 = persoane.idPersoana
+inner join amici a2 ON a2.idpersoana2 = persoane.idPersoana;
 
+#10
+select COUNT(p.idPersoana) AS Nr_persoane
+FROM persoane
+INNER JOIN amici a ON persoane.idPersoana = a.idpersoana1 OR persoane.idPersoana = a.idpersoana2
+inner join persoane p ON (p.idPersoana = a.idpersoana1 OR p.idPersoana = a.idpersoana2) AND p.idPersoana <> persoane.idPersoana
+INNER JOIN amici a2 ON p.idPersoana = a2.idpersoana1 OR p.idPersoana = a2.idpersoana2
+WHERE persoane.Numele = 'Tiany';
 
 
 #11
-select numele, varsta
-from persoane
-inner join amici a1 on persoane.idPersoana = a1.idPersoana1
-inner join amici a2 on persoane.idPersoana = a2.idPersoana2
-having max(a2.idPersoana2);
+select Numele, Varsta, count(idPersoana) as prieteni
+from persoane as p
+inner join amici a on p.idPersoana = a.idPersoana1 or p.idPersoana = a.idPersoana2
+group by idPersoana
+HAVING max(a.idPersoana1 = p.idPersoana OR a.idPersoana2 = p.idPersoana)
+order by prieteni desc;
 
 #13
 
 #14
-select distinct Numele
+select Numele
 from persoane
-inner join rude r1 on persoane.idPersoana = r1.idPersoana1
-inner join rude r2 on persoane.idPersoana = r2.idPersoana2
-inner join amici a1 on persoane.idPersoana = a1.idPersoana1
-inner join amici a2 on persoane.idPersoana = a2.idPersoana2
-where count(a2.idPersoana2) < 1 and count(r2.idPersoana2) = 1
+left join rude r1 on persoane.idPersoana = r1.idPersoana1
+left join rude r2 on persoane.idPersoana = r2.idPersoana2
+having count(r1.idPersoana2) < 1 and count(r2.idPersoana2) = 1
+
+union all
+select numele
+from persoane
+right join amici a1 on persoane.idPersoana = a1.idPersoana1
+right join amici a2 on persoane.idPersoana = a2.idPersoana2
+having count(a1.idPersoana2) < 1 and count(a2.idPersoana2) = 1;
