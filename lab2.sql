@@ -195,8 +195,7 @@ GROUP BY p1.numele,p2.numele,p3.numele;
 select *
 from persoane
 inner join rude
-where
-	(rude.idPersoana1 = persoane.idPersoana or rude.idPersoana2 = persoane.idPersoana)
+where (rude.idPersoana1 = persoane.idPersoana or rude.idPersoana2 = persoane.idPersoana)
 	and (
 	persoane.idPersoana not in (
 		select amici.idPersoana1
