@@ -172,7 +172,28 @@ group by idPersoana
 HAVING max(a.idPersoana1 = p.idPersoana OR a.idPersoana2 = p.idPersoana)
 order by prieteni desc;
 
+#12
+SELECT DISTINCT rude.idpersoana1 AS A,
+                rude.idpersoana2 AS B,
+                if ( r.idpersoana1 <> rude.idpersoana1 AND r.idpersoana1 <> rude.idpersoana2,
+                    r.idpersoana1,
+                    if ( r.idpersoana2 <> rude.idpersoana1 AND r.idpersoana2 <> rude.idpersoana2,
+                        r.idpersoana2,
+                        NULL )) AS C
+FROM rude
+inner join rude r on r.idpersoana1 = rude.idpersoana2
+having C is not null;
+
+
 #13
+SELECT
+CONCAT(p1.idPersoana, " ", p1.Numele, " ", p1.Varsta) AS Persoana_1,
+CONCAT(p2.idPersoana, " ", p2.Numele, " ", p2.Varsta) AS Persoana_2,
+CONCAT(p3.idPersoana, " ", p3.Numele, " ", p3.Varsta) AS Persoana_3
+FROM persoane p1, persoane p2, persoane p3
+WHERE p1.varsta > p2.varsta AND p2.varsta > p3.varsta
+GROUP BY p1.numele,p2.numele,p3.numele;
+
 
 #14
 select Numele
@@ -187,3 +208,33 @@ from persoane
 right join amici a1 on persoane.idPersoana = a1.idPersoana1
 right join amici a2 on persoane.idPersoana = a2.idPersoana2
 having count(a1.idPersoana2) < 1 and count(a2.idPersoana2) = 1;
+
+
+SELECT *
+FROM persoane
+INNER JOIN rude
+WHERE
+    (rude.idPersoana1 = persoane.idPersoana OR
+     rude.idPersoana2 = persoane.idPersoana)AND 
+     (persoane.idPersoana NOT IN (
+SELECT amici.idPersoana1
+FROM amici
+WHERE amici.idPersoana1 = persoane.idPersoana OR amici.idPersoana2 = persoane.idPersoana)
+      AND
+      persoane.idPersoana NOT IN (
+SELECT amici.idPersoana2
+FROM amici
+WHERE amici.idPersoana1 = persoane.idPersoana OR amici.idPersoana2 = persoane.idPersoana));
+
+
+SELECT p1.idPersoana, p1.Numele
+FROM persoane p1
+INNER JOIN rude ON p1.idPersoana = rude.idpersoana1
+ 	 	OR p1.idPersoana = rude.idpersoana2
+WHERE p1.idPersoana NOT IN (
+	SELECT p2.idPersoana
+	FROM persoane p2
+	INNER JOIN amici ON p2.idPersoana = amici.idpersoana1
+		OR p2.idPersoana = amici.idpersoana2 )
+GROUP BY p1.idPersoana
+HAVING COUNT(rude.idpersoana1) = 1;
