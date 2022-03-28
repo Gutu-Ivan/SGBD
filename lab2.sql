@@ -208,3 +208,16 @@ where
 		from amici
 		where amici.idPersoana1 = persoane.idPersoana or amici.idPersoana2 = persoane.idPersoana)
 	);
+
+#14 v2
+select Numele
+from persoane
+left join rude r1 on persoane.idPersoana = r1.idPersoana1
+left join rude r2 on persoane.idPersoana = r2.idPersoana2
+having count(r1.idPersoana2 or r2.idPersoana2) <> 1
+union all
+select numele
+from persoane
+right join amici a1 on persoane.idPersoana = a1.idPersoana1
+right join amici a2 on persoane.idPersoana = a2.idPersoana2
+having count(a1.idPersoana2 or a2.idPersoana2) = 0;
