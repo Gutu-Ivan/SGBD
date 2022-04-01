@@ -50,6 +50,7 @@ values  (1, 1),
 	    (3, 3),
 	    (4, 4);
 
+#Procedures
 #1
 delimiter $$
 create procedure getArticleList(in CercetatorId smallint)
@@ -167,3 +168,19 @@ begin
 end$$
 delimiter ;
 call checkExplorerErase(3);
+
+#Functions
+#7
+drop function if exists getUniversity;
+delimiter $$
+create function getUniversity(CercetatorId smallint)
+returns varchar(5)
+begin
+    return (
+        select denUniversitate
+        from universitate
+            inner join cercetatori c on universitate.idUniversitate = c.idUniversitate
+        where idCercetator = CercetatorId);
+end $$
+delimiter ;
+select getUniversity(3);
