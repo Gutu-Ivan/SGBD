@@ -184,3 +184,17 @@ begin
 end $$
 delimiter ;
 select getUniversity(3);
+
+#8
+drop function if exists getQualifier;
+delimiter $$
+create function getQualifier(CercetatorId smallint)
+returns varchar(20)
+begin
+    return (
+        select calificativ
+        from cercetatori
+        where cercetatori.idCercetator = CercetatorId);
+end $$
+delimiter ;
+select getQualifier(3);
