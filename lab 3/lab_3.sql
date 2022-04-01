@@ -197,4 +197,39 @@ begin
         where cercetatori.idCercetator = CercetatorId);
 end $$
 delimiter ;
-select getQualifier(3);
+select getQualifier(2);
+
+#9
+drop function if exists getAmountOfExplorers;
+delimiter $$
+create function getAmountOfExplorers(denUniversitate varchar(20))
+returns smallint
+begin
+    return (
+        select count(idCercetator)
+        from cercetatori
+        inner join universitate u on cercetatori.idUniversitate = u.idUniversitate
+        where denUniversitate = u.denUniversitate
+        );
+end $$
+delimiter ;
+select getAmountOfExplorers('USARB');
+
+#10
+drop function if exists getAmountOfExplorers;
+delimiter $$
+create function getAmountOfArticols(IdUniversitate smallint)
+returns smallint
+begin
+    return (
+        select count(idArticol)
+        from articole
+        join articole art on art.idArticol = a.idArticol
+        join universitate u on cercetatori.idUniversitate = u.idUniversitate
+        join autori a on cercetatori.idCercetator = a.idCercetator
+
+        where denUniversitate = u.denUniversitate
+        );
+end $$
+delimiter ;
+select getAmountOfExplorers('USARB');
