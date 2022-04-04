@@ -12,7 +12,8 @@ denUniversitate varchar(100)
 create table cercetatori(
 idCercetator smallint,
 numeCercetator varchar(100),
-idUniversitate smallint
+idUniversitate smallint,
+calificativ int
 );
 
 create table autori(
@@ -39,10 +40,12 @@ values  (1, 'USARB'),
 	    (3, 'ASEM');
 
 insert into cercetatori
-values  (1, 'Dodu Petru', 1),
-	    (2, 'Lungu Vasile', 2),
-	    (3, 'Vrabie Maria', 1),
-	    (4, 'Ombun Bogdan', 3);
+values  (1, 'Dodu Petru', 1, 1),
+	    (2, 'Lungu Vasile', 2, 1),
+	    (3, 'Vrabie Maria', 1, 2),
+	    (4, 'Ombun Bogdan', 3, 1),
+        (5, 'Charlize Moreno', 2, 3),
+        (6, 'Damian Hirst', 3, 1);
 
 insert into autori
 values  (1, 1),
@@ -67,14 +70,14 @@ call getArticleList(3);
 
 #2
 delimiter $$
-create procedure getExplorersAndArticlets(in UniversityId smallint)
+create procedure getExplorersAndArticlets(in UniversitateId smallint)
 begin
     select distinct cercetatori.idCercetator, cercetatori.numeCercetator, art.idArticol, art.denArticol
     from cercetatori
         inner join universitate u on cercetatori.idUniversitate = u.idUniversitate
         inner join autori a on cercetatori.idCercetator = a.idCercetator
         inner join articole art on art.idArticol = a.idArticol
-    where u.idUniversitate = UniversityId
+    where u.idUniversitate = UniversitateId
     order by a.idCercetator;
 end$$
 delimiter ;
@@ -82,14 +85,14 @@ call getExplorersAndArticlets(2);
 
 #3
 delimiter $$
-create or replace procedure getExplorersAndArticlets(in UniversityId smallint)
+create or replace procedure getExplorersAndArticlets(in UniversitateId smallint)
 begin
     select distinct cercetatori.idCercetator, cercetatori.numeCercetator, art.idArticol, art.denArticol
     from cercetatori
         left join universitate u on cercetatori.idUniversitate = u.idUniversitate
         left join autori a on cercetatori.idCercetator = a.idCercetator
         left join articole art on art.idArticol = a.idArticol
-    where u.idUniversitate = UniversityId
+    where u.idUniversitate = UniversitateId
     order by a.idCercetator;
 end$$
 delimiter ;
@@ -152,6 +155,7 @@ delimiter ;
 call setValuesToQualifier();
 
 #6
+drop function if exists checkExplorerErase;
 delimiter $$
 create procedure checkExplorerErase(in CercetatorId smallint)
 begin
@@ -197,12 +201,12 @@ begin
         where cercetatori.idCercetator = CercetatorId);
 end $$
 delimiter ;
-select getQualifier(2);
+select getQualifier(3);
 
 #9
-drop function if exists getAmountOfExplorers;
+drop function if exists getAmountOfUniversityExplorers;
 delimiter $$
-create function getAmountOfExplorers(denUniversitate varchar(20))
+create function getAmountOfUniversityExplorers(denUniversitate varchar(20))
 returns smallint
 begin
     return (
@@ -213,23 +217,51 @@ begin
         );
 end $$
 delimiter ;
-select getAmountOfExplorers('USARB');
+select getAmountOfUniversityExplorers('USARB');
 
 #10
-drop function if exists getAmountOfExplorers;
+DROP FUNCTION if EXISTS getNumberOfUniversityArticles;
 delimiter $$
-create function getAmountOfArticols(IdUniversitate smallint)
+create function getNumberOfUniversityArticles(UniversitateId smallint)
 returns smallint
 begin
-    return (
-        select count(idArticol)
-        from articole
-        join articole art on art.idArticol = a.idArticol
-        join universitate u on cercetatori.idUniversitate = u.idUniversitate
-        join autori a on cercetatori.idCercetator = a.idCercetator
-
-        where denUniversitate = u.denUniversitate
-        );
+return(select count(idArticol)
+ 		from autori
+ 		inner join cercetatori on cercetatori.idcercetator = autori.idcercetator
+ 		where iduniversitate = UniversitateId);
 end $$
 delimiter ;
-select getAmountOfExplorers('USARB');
+select getNumberOfUniversityArticles(1);
+
+#11
+drop function if exists getNumberOfExplorerArticles;
+delimiter $$
+create function getNumberOfExplorerArticles(NumeCercetator VARCHAR(20))
+returns smallint
+begin
+return(select count(idArticol)
+ 		from autori
+ 		inner join cercetatori c on c.idcercetator = autori.idcercetator
+ 		where c.numecercetator = NumeCercetator);
+end $$
+delimiter ;
+select getNumberOfExplorerArticles('Dodu Petru');
+
+#12
+delimiter $$
+create function checkExplorersUniversity(NumeCercetator VARCHAR(20), UniversitateId smallint)
+returns bool
+begin
+    if exists (select *
+            from cercetatori c
+            where c.numecercetator = NumeCercetator and c.idUniversitate = UniversitateId)
+    then
+        return TRUE;
+        else
+            return FALSE;
+end if;
+end $$
+delimiter ;
+
+select checkExplorersUniversity('Lungu Vasile', 2);
+select checkExplorersUniversity('Lungu Vasile', 1);
