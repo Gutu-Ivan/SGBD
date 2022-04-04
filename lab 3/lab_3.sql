@@ -13,7 +13,7 @@ create table cercetatori(
 idCercetator smallint,
 numeCercetator varchar(100),
 idUniversitate smallint,
-calificativ int
+calificativ varchar(20)
 );
 
 create table autori(
@@ -100,22 +100,22 @@ call getExplorersAndArticlets(3);
 
 #4
 delimiter $$
-create procedure calcUniversityAndMainRating()
+create or replace procedure calcUniversityAndMainRating()
 begin
     select cercetatori.idCercetator, numeCercetator,
     count(a.idArticol) / (select count(*) from articole) * 100 as MainRating,
     count(a.idArticol) / (select count(*) from universitate) * 100 as UniversityRating
     from cercetatori
         join universitate u on cercetatori.idUniversitate = u.idUniversitate
-        join autori a on cercetatori.idCercetator = a.idCercetator
-        join articole art on art.idArticol = a.idArticol
+        left join autori a on cercetatori.idCercetator = a.idCercetator
+        left join articole art on art.idArticol = a.idArticol
     group by cercetatori.idCercetator;
 end$$
 delimiter ;
 call calcUniversityAndMainRating();
 
 #5
-delimiter $$
+/*delimiter $$
 create procedure setValuesToQualifier()
 begin
     alter table cercetatori
@@ -126,17 +126,15 @@ begin
     join autori a on cercetatori.idCercetator = a.idCercetator
     join articole art on art.idArticol = a.idArticol
     group by case
-        when count(idArticol) > 25 then
+        when count(art.idArticol) > 25 then
             set calificativ = 'foarte bine'
-        when count(idArticol) >15
-            and 25 > count(idArticol) then
+        when count(idArticol) >15 and 25 > count(idArticol) then
             set calificativ = 'bine'
-        when count(idArticol) > 5
-            and 15 > count(idArticol) then
+        when count(idArticol) > 5 and 15 > count(idArticol) then
             set calificativ = 'suficient'
         else
             set calificativ = 'insuficient'
-    end
+    end*/
 
     /*if count(idArticol) > 25 then
          update cercetatori
@@ -150,9 +148,9 @@ begin
     else
         update cercetatori
         set calificativ = 'insuficient';*/
-end$$
+/*end$$
 delimiter ;
-call setValuesToQualifier();
+call setValuesToQualifier();*/
 
 #6
 drop function if exists checkExplorerErase;
@@ -220,7 +218,7 @@ delimiter ;
 select getAmountOfUniversityExplorers('USARB');
 
 #10
-DROP FUNCTION if EXISTS getNumberOfUniversityArticles;
+drop function if exists getNumberOfUniversityArticles;
 delimiter $$
 create function getNumberOfUniversityArticles(UniversitateId smallint)
 returns smallint
@@ -253,12 +251,12 @@ create function checkExplorersUniversity(NumeCercetator VARCHAR(20), Universitat
 returns bool
 begin
     if exists (select *
-            from cercetatori c
-            where c.numecercetator = NumeCercetator and c.idUniversitate = UniversitateId)
-    then
-        return TRUE;
-        else
-            return FALSE;
+               from cercetatori c
+               where c.numecercetator = NumeCercetator and c.idUniversitate = UniversitateId)
+        then
+            return TRUE;
+    else
+        return FALSE;
 end if;
 end $$
 delimiter ;
