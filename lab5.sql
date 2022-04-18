@@ -1,12 +1,12 @@
 #a
-createtablecercetatori_copylikecercetatori;
-insertcercetatori_copyselect*fromcercetatori;
+create table cercetatori_copy like cercetatori;
+insert cercetatori_copy select * from cercetatori;
 count(
-deletefromcercetatori_copy
-wherecercetatori_copy.iduniversitate=1)
+delete from cercetatori_copy
+where cercetatori_copy.iduniversitate=1)
 
-droptablecercetatori_copy;
-createtablecercetatori_copylikecercetatori;
+drop table cercetatori_copy;
+create table cercetatori_copylikecercetatori;
 insertcercetatori_copyselect*fromcercetatori;
 
 delimiter$$
